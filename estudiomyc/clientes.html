@@ -64,22 +64,26 @@
                 <!-- Barra de herramientas -->
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" id="btnNuevo">
-                            Nuevo Cliente
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#formularioModal">
+                            <i class="fas fa-plus"></i> Nuevo Cliente
                         </button>
                     </div>
-                    <div class="col-md-6">
-                        <input type="search" class="form-control" placeholder="Buscar cliente...">
-                    </div>
                 </div>
+
+                <!-- Botones de filtro -->
+                <ul class="nav nav-pills" id="filtros">
+                    <li class="nav-item"><button class="nav-link">Todos</button></li>
+                    <li class="nav-item"><button class="nav-link">Personas Físicas</button></li>
+                    <li class="nav-item"><button class="nav-link">Personas Jurídicas</button></li>
+                </ul>
 
                 <!-- Tabla de clientes -->
                 <div class="table-responsive">
                     <table class="table table-hover table-striped">
                         <thead class="table-dark">
                             <tr>
-                                <th>Id</th>
-                                <th>Código</th>
+                                <th>ID</th>
                                 <th>Tipo Persona</th>
                                 <th>Tipo DNI</th>
                                 <th>Apellido/Razón Social</th>
@@ -96,24 +100,6 @@
                             </tr>
                         </thead>
                         <tbody id="listado">
-                            <!-- Ejemplo de fila con botones -->
-                            <tr>
-                                <td>1</td>
-                                <td>Física</td>
-                                <td>12345678</td>
-                                <td>Pérez</td>
-                                <td>Juan</td>
-                                <td>Calle 123</td>
-                                <td>11-1234-5678</td>
-                                <td>juan@email.com</td>
-                                <td>Buenos Aires</td>
-                                <td>1234</td>
-                                <td>1980-01-01</td>
-                                <td>2024-01-01</td>
-                                <td></td>
-                                <td>
-                                </td>
-                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -121,7 +107,7 @@
         </div>
     </div>
 
-    <!-- Modal para Agregar/Editar Cliente -->
+    <!-- Modal -->
     <div class="modal fade" id="formularioModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -132,10 +118,9 @@
                 <form id="formulario">
                     <div class="modal-body">
                         <div class="row g-3">
-                            <!-- Los campos del formulario se mantienen igual -->
                             <div class="col-md-4">
-                                <label class="form-label">Código</label>
-                                <input type="number" class="form-control" id="codigo" name="codigo" required>
+                                <label class="form-label">ID</label>
+                                <input type="number" class="form-control" id="id" name="id" required>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Tipo Persona</label>

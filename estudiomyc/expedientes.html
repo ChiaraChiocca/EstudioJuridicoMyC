@@ -69,10 +69,14 @@
                             <i class="fas fa-plus"></i> Nuevo Expediente
                         </button>
                     </div>
-                    <div class="col-md-6">
-                        <input type="search" class="form-control" placeholder="Buscar expediente...">
-                    </div>
                 </div>
+
+                <!-- Botones de filtro -->
+                <ul class="nav nav-pills" id="filtros">
+                    <li class="nav-item"><button class="nav-link">Todos</button></li>
+                    <li class="nav-item"><button class="nav-link">Judicial</button></li>
+                    <li class="nav-item"><button class="nav-link">Extrajudicial</button></li>
+                </ul>
 
                 <!-- Tabla de expedientes -->
                 <div class="table-responsive">
@@ -93,31 +97,7 @@
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-expedientes">
-                            <!-- Ejemplo de fila con botones -->
-                            <tr>
-                                <td>1</td>
-                                <td>J</td>
-                                <td>123456/2024</td>
-                                <td>Civil N°5</td>
-                                <td>Pérez c/ González s/ Daños</td>
-                                <td>2024-01-15</td>
-                                <td>Civil</td>
-                                <td>Dr. Martínez</td>
-                                <td></td>
-                                <td>Activo</td>
-                                <td></td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-info" title="Editar">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-danger" title="Eliminar">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                        <tbody id="listado">
                         </tbody>
                     </table>
                 </div>
@@ -125,7 +105,7 @@
         </div>
     </div>
 
-    <!-- Modal para Agregar/Editar Expediente -->
+    <!-- Modal -->
     <div class="modal fade" id="formularioModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -207,7 +187,10 @@
         <p class="m-0">© 2024 Estudio Jurídico M&C. Todos los derechos reservados.</p>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
+    <script type="module" src="./controladores/lista-expedientes.js"></script>
 </body>
 
 </html>
