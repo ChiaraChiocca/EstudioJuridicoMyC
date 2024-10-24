@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Principal - Estudio Jurídico M&C</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="panel.html">Estudio Jurídico M&C</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user"></i> Usuario</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Panel de Control</h2>
+
+        <div class="row justify-content-center g-4">
+            <!-- Tarjeta de Clientes -->
+            <div class="col-md-4">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users dashboard-icon"></i>
+                        <h3 class="card-title">Clientes</h3>
+                        <p class="card-text">Gestione la información de sus clientes</p>
+                        <a href="clientes.html" class="btn btn-primary">Acceder</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Expedientes -->
+            <div class="col-md-4">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-folder-open dashboard-icon"></i>
+                        <h3 class="card-title">Expedientes</h3>
+                        <p class="card-text">Administre los expedientes activos</p>
+                        <a href="expedientes.html" class="btn btn-primary">Acceder</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Juzgados -->
+            <div class="col-md-4">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-balance-scale dashboard-icon"></i>
+                        <h3 class="card-title">Juzgados</h3>
+                        <p class="card-text">Consulte información de juzgados</p>
+                        <a href="juzgados.html" class="btn btn-primary">Acceder</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p class="m-0">© 2024 Estudio Jurídico M&C. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
