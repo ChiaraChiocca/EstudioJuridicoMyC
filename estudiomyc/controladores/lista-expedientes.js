@@ -10,7 +10,7 @@ const alerta = document.querySelector("#alerta");
 // Formulario
 const formulario = document.querySelector("#formulario");
 const formularioModal = new bootstrap.Modal(document.querySelector("#formularioModal"));
-const btnNuevoExpediente = document.querySelector("[data-bs-target='#formularioModal']");
+const btnNuevo = document.querySelector("#btnNuevo");
 
 // Inputs
 const inputId = document.querySelector("#id");
@@ -26,12 +26,12 @@ const inputEstado = document.querySelector("#estado");
 const inputFechaBaja = document.querySelector("#fechaBaja");
 
 // Variables 
-let buscar = '';
 let opcion = '';
 let id;
 let mensajeAlerta;
 
 let expedientes = [];
+let expediente = {};
 
 /**
  * Esta función se ejecuta cuando
@@ -69,16 +69,6 @@ function mostrarExpedientes() {
             <td>${expediente.fechaFin || '-'}</td>
             <td>${expediente.estado}</td>
             <td>${expediente.fechaBaja || '-'}</td>
-            <td class="text-center">
-                ${logueado ? `
-                    <button class="btn btn-sm btn-primary btn-editar me-1" data-id="${expediente.id}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger btn-borrar" data-id="${expediente.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                ` : ''}
-            </td>
         `;
         listado.appendChild(row);
     });
@@ -87,7 +77,7 @@ function mostrarExpedientes() {
 /**
  * Ejecuta el evento click del botón Nuevo
  */
-btnNuevoExpediente.addEventListener('click', () => {
+btnNuevo.addEventListener('click', () => {
     // Limpiamos los inputs
     inputId.value = null;
     inputTipoExpediente.value = null;
@@ -104,88 +94,102 @@ btnNuevoExpediente.addEventListener('click', () => {
     // Mostrar el formulario Modal
     formularioModal.show();
     opcion = 'insertar';
-});
+})
 
 /**
- * Limpia el formulario
+ *  Ejecuta el evento submit del formulario
  */
-function limpiarFormulario() {
-    formulario.reset();
-}
+formulario.addEventListener('submit', (e) => {
+    e.preventDefault(); // Prevenimos la acción por defecto
 
-/**
- * Ejecuta el evento submit del formulario
- */
-formulario.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const datos = new FormData(formulario);
+    const datos = new FormData(formulario); // Guardamos los datos del formulario
 
-    try {
-        if (opcion === 'insertar') {
-            await insertarExpedientes(datos);
-            mensajeAlerta = 'Expediente agregado correctamente';
-        } else {
-            await actualizarExpedientes(datos, id);
-            mensajeAlerta = 'Expediente actualizado correctamente';
-        }
+    switch (opcion) {
+        case 'insertar':
+            mensajeAlerta = 'Datos guardados';
+            insertarExpedientes(datos);
+            break;
 
-        formularioModal.hide();
-        expedientes = await obtenerExpedientes();
-        expedientesFiltrados = filtrarExpedientes(buscar);
-        mostrarExpedientes();
-        insertarAlerta(mensajeAlerta, 'success');
-    } catch (error) {
-        insertarAlerta('Error al procesar la operación', 'danger');
+        case 'actualizar':
+            mensajeAlerta = 'Datos actualizados';
+            actualizarExpedientes(datos, id);
+            break;
     }
-});
+    insertarAlerta(mensajeAlerta, 'success');
+    mostrarExpedientes();
+})
 
 /**
  * Define los mensajes de alerta
+ * @param mensaje el mensaje a mostrar
+ * @param tipo el tipo de alerta
  */
 const insertarAlerta = (mensaje, tipo) => {
-    alerta.innerHTML = `
+    const envoltorio = document.createElement('div');
+    envoltorio.innerHTML = `
         <div class="alert alert-${tipo} alert-dismissible" role="alert">
             <div>${mensaje}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
         </div>
     `;
-};
+    alerta.append(envoltorio);
+}
 
 /**
- * Maneja los eventos de edición y eliminación
+ * Determina en qué elemento se realiza un evento
+ * @param elemento el elemento al que se le realiza el evento
+ * @param evento el evento realizado
+ * @param selector el selector seleccionado
+ * @param manejador el método que maneja el evento
  */
-document.addEventListener('click', async (e) => {
-    if (e.target.closest('.btn-editar')) {
-        const button = e.target.closest('.btn-editar');
-        id = button.dataset.id;
-        expediente = expedientes.find(exp => exp.id == id);
-
-        if (expediente) {
-            Object.entries(expediente).forEach(([key, value]) => {
-                const input = document.querySelector(`#${key}`);
-                if (input) input.value = value || '';
-            });
-
-            opcion = 'actualizar';
-            formularioModal.show();
+const on = (elemento, evento, selector, manejador) => {
+    elemento.addEventListener(evento, e => { // Agregamos el método para escuchar el evento
+        if (e.target.closest(selector)) { // Si el objetivo del manejador es el selector 
+            manejador(e); // Ejecutamos el método del manejador 
         }
-    }
+    })
+}
 
-    if (e.target.closest('.btn-borrar')) {
-        const button = e.target.closest('.btn-borrar');
-        id = button.dataset.id;
-        expediente = expedientes.find(exp => exp.id == id);
+/**
+ * Función para el botón Editar
+ */
+on(document, 'click', '.btn-editar', e => {
+    const cardFooter = e.target.parentNode; // Guardamos el elemento padre del botón
 
-        if (expediente && confirm(`¿Realmente desea eliminar el expediente ${expediente.nroExpediente}?`)) {
-            try {
-                await eliminarExpedientes(id);
-                expedientes = await obtenerExpedientes();
-                expedientesFiltrados = filtrarExpedientes(buscar);
-                mostrarExpedientes();
-                insertarAlerta('Expediente eliminado correctamente', 'success');
-            } catch (error) {
-                insertarAlerta('Error al eliminar el expediente', 'danger');
-            }
-        }
+    // Guardamos los valores del card del expediente
+    id = cardFooter.querySelector('.id-expediente').value;
+    expediente = expedientes.find(item => item.id == id);
+
+    // Asignamos los valores a los input del formulario
+    inputId.value = expediente.id;
+    inputTipoExpediente.value = expediente.tipoExpediente;
+    inputNroExpediente.value = expediente.nroExpediente;
+    inputJuzgado.value = expediente.juzgado;
+    inputCaratula.value = expediente.caratula;
+    inputFechaInicio.value = expediente.fechaInicio;
+    inputTipoJuicio.value = expediente.tipoJuicio;
+    inputAcargode.value = expediente.acargode;
+    inputFechaFin.value = expediente.fechaFin;
+    inputEstado.value = expediente.estado;
+    inputFechaBaja.value = expediente.fechaBaja;
+
+
+    // Mostramos el formulario
+    formularioModal.show();
+    opcion = 'actualizar';
+})
+
+/**
+ * Función para el botón Borrar
+ */
+on(document, 'click', '.btn-borrar', e => {
+    const cardFooter = e.target.parentNode;
+    id = cardFooter.querySelector('.id-expediente').value;
+
+    let aceptar = confirm(`¿Realmente desea eliminar el expediente ${expediente.nombreExpediente}?`);
+    if (aceptar) {
+        eliminarExpedientes(id);
+        insertarAlerta(`${expediente.nombreExpediente} borrado`, 'danger');
+        mostrarExpedientes();
     }
-});
+})

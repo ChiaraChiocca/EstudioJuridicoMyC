@@ -10,7 +10,7 @@ const alerta = document.querySelector("#alerta");
 // Formulario
 const formulario = document.querySelector("#formulario");
 const formularioModal = new bootstrap.Modal(document.querySelector("#formularioModal"));
-const btnNuevoJuzgado = document.querySelector("[data-bs-target='#formularioModal']");
+const btnNuevo = document.querySelector("#btnNuevo");
 
 // Inputs
 const inputId = document.querySelector("#id");
@@ -26,6 +26,7 @@ let id;
 let mensajeAlerta;
 
 let juzgados = [];
+let juzgado = {};
 
 /**
  * Esta función se ejecuta cuando
@@ -59,16 +60,6 @@ function mostrarJuzgados() {
             <td>${juzgado.juezTram}</td>
             <td>${juzgado.secretario}</td>
             <td>${juzgado.telefono}</td>
-            <td class="text-center">
-                ${logueado ? `
-                    <button class="btn btn-sm btn-primary btn-editar" data-id="${juzgado.id}">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger btn-borrar" data-id="${juzgado.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                ` : ''}
-            </td>
         `;
         listado.appendChild(row);
     });
@@ -77,7 +68,7 @@ function mostrarJuzgados() {
 /**
  * Ejecuta el evento click del botón Nuevo
  */
-btnNuevoJuzgado.addEventListener('click', () => {
+btnNuevo.addEventListener('click', () => {
     // Limpiamos los inputs
     inputId.value = null;
     inputNroJuzgado.value = null;
@@ -90,7 +81,7 @@ btnNuevoJuzgado.addEventListener('click', () => {
     formularioModal.show();
 
     opcion = 'insertar';
-});
+})
 
 /**
  *  Ejecuta el evento submit del formulario
@@ -113,7 +104,7 @@ formulario.addEventListener('submit', (e) => {
     }
     insertarAlerta(mensajeAlerta, 'success');
     mostrarJuzgados();
-});
+})
 
 /**
  * Define los mensajes de alerta
@@ -129,7 +120,7 @@ const insertarAlerta = (mensaje, tipo) => {
         </div>
     `;
     alerta.append(envoltorio);
-};
+}
 
 /**
  * Determina en qué elemento se realiza un evento
@@ -144,7 +135,7 @@ const on = (elemento, evento, selector, manejador) => {
             manejador(e); // Ejecutamos el método del manejador 
         }
     })
-};
+}
 
 /**
  * Función para el botón Editar
@@ -157,7 +148,7 @@ on(document, 'click', '.btn-editar', e => {
     juzgado = juzgados.find(item => item.id == id);
 
     // Asignamos los valores a los input del formulario
-    inputCodigo.value = juzgado.codigo;
+    inputId.value = juzgado.id;
     inputNroJuzgado.value = juzgado.nroJuzgado;
     inputNombreJuzgado.value = juzgado.nombreJuzgado;
     inputJuezTram.value = juzgado.juezTram;
@@ -167,7 +158,7 @@ on(document, 'click', '.btn-editar', e => {
     // Mostramos el formulario
     formularioModal.show();
     opcion = 'actualizar';
-});
+})
 
 /**
  * Función para el botón Borrar
@@ -182,4 +173,4 @@ on(document, 'click', '.btn-borrar', e => {
         insertarAlerta(`${juzgado.nombreJuzgado} borrado`, 'danger');
         mostrarJuzgados();
     }
-});
+})
