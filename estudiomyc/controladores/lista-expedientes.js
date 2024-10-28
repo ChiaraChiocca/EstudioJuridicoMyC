@@ -10,10 +10,10 @@ const alerta = document.querySelector("#alerta");
 // Formulario
 const formulario = document.querySelector("#formulario");
 const formularioModal = new bootstrap.Modal(document.querySelector("#formularioModal"));
-const btnNuevo = document.querySelector("#btnNuevo");
+const btnNuevoExpediente = document.querySelector("[data-bs-target='#formularioModal']");
 
 // Inputs
-const inputCodigo = document.querySelector("#codigo");
+const inputId = document.querySelector("#id");
 const inputTipoExpediente = document.querySelector("#tipoExpediente");
 const inputNroExpediente = document.querySelector("#nroExpediente");
 const inputJuzgado = document.querySelector("#juzgado");
@@ -32,41 +32,15 @@ let id;
 let mensajeAlerta;
 
 let expedientes = [];
-let expedientesFiltrados = [];
-let expediente = {};
-
-// Control de usuario
-let usuario = '';
-let logueado = false;
 
 /**
  * Esta función se ejecuta cuando
  * todo el contenido está cargado
  */
 document.addEventListener('DOMContentLoaded', async () => {
-    controlUsuario();
     expedientes = await obtenerExpedientes();
-    expedientesFiltrados = filtrarPorNumero('');
     mostrarExpedientes();
 });
-
-/**
- * Controla si el usuario está logueado
- */
-const controlUsuario = () => {
-    if (sessionStorage.getItem('usuario')) {
-        usuario = sessionStorage.getItem('usuario');
-        logueado = true;
-    } else {
-        logueado = false;
-    }
-
-    if (logueado) {
-        btnNuevo.style.display = 'inline';
-    } else {
-        btnNuevo.style.display = 'none';
-    }
-};
 
 /**
  * Obtiene los expedientes
@@ -77,79 +51,45 @@ async function obtenerExpedientes() {
 }
 
 /**
- * Filtra los expedientes por número 
- * @param n el número del expediente 
- * @return expedientes filtrados 
- */
-function filtrarPorNumero(n) {
-    expedientesFiltrados = expedientes.filter(items => items.nroExpediente.includes(n));
-    return expedientesFiltrados;
-}
-
-/**
- * Muestra los expedientes 
+ * Muestra los expedientes en formato tabla
  */
 function mostrarExpedientes() {
     listado.innerHTML = '';
-    expedientesFiltrados.map((expediente) =>
-    (listado.innerHTML += `
-        <div class="col">
-            <div class="card" style="width: 18rem;">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <span name="spanCodigo">${expediente.codigo}</span> - <span name="spanNroExpediente">${expediente.nroExpediente}</span>
-                    </h5>
-                    <p class="card-text">
-                        Tipo: <span name="spanTipoExpediente">${expediente.tipoExpediente}</span><br>
-                        Juzgado: <span name="spanJuzgado">${expediente.juzgado}</span><br>
-                        Carátula: <span name="spanCaratula">${expediente.caratula}</span>
-                    </p>
-                    <p>
-                        Fecha Inicio: <span name="spanFechaInicio">${expediente.fechaInicio}</span><br>
-                        Estado: <span name="spanEstado">${expediente.estado}</span>
-                    </p>
-                </div>
-                <div class ="card-footer ${logueado ? 'd-flex' : 'none'};">
-                    <a class="btn-editar btn btn-primary">Editar</a>
-                    <a class="btn-borrar btn btn-danger">Borrar</a>
-                    <input type="hidden" class="id-expediente" value="${expediente.id}">
-                </div>
-            </div>
-        </div> 
-    `));
-}
-
-/**
- * Filtro de los expedientes
- */
-const botonesFiltros = document.querySelectorAll('#filtros button');
-botonesFiltros.forEach(boton => {
-    boton.addEventListener('click', e => {
-        boton.classList.add('active');
-        boton.setAttribute('aria-current', 'page');
-
-        botonesFiltros.forEach(otroBoton => {
-            if (otroBoton !== boton) {
-                otroBoton.classList.remove('active');
-                otroBoton.removeAttribute('aria-current');
-            }
-        });
-
-        buscar = boton.innerHTML;
-        if (buscar == 'Todos') {
-            buscar = '';
-        }
-        filtrarPorNumero(buscar);
-        mostrarExpedientes();
+    expedientes.forEach((expediente) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${expediente.id}</td>
+            <td>${expediente.tipoExpediente}</td>
+            <td>${expediente.nroExpediente}</td>
+            <td>${expediente.juzgado}</td>
+            <td>${expediente.caratula}</td>
+            <td>${expediente.fechaInicio}</td>
+            <td>${expediente.tipoJuicio}</td>
+            <td>${expediente.acargode}</td>
+            <td>${expediente.fechaFin || '-'}</td>
+            <td>${expediente.estado}</td>
+            <td>${expediente.fechaBaja || '-'}</td>
+            <td class="text-center">
+                ${logueado ? `
+                    <button class="btn btn-sm btn-primary btn-editar me-1" data-id="${expediente.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger btn-borrar" data-id="${expediente.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                ` : ''}
+            </td>
+        `;
+        listado.appendChild(row);
     });
-});
+}
 
 /**
  * Ejecuta el evento click del botón Nuevo
  */
-btnNuevo.addEventListener('click', () => {
+btnNuevoExpediente.addEventListener('click', () => {
     // Limpiamos los inputs
-    inputCodigo.value = null;
+    inputId.value = null;
     inputTipoExpediente.value = null;
     inputNroExpediente.value = null;
     inputJuzgado.value = null;
@@ -167,99 +107,85 @@ btnNuevo.addEventListener('click', () => {
 });
 
 /**
- *  Ejecuta el evento submit del formulario
+ * Limpia el formulario
  */
-formulario.addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevenimos la acción por defecto
+function limpiarFormulario() {
+    formulario.reset();
+}
 
-    const datos = new FormData(formulario); // Guardamos los datos del formulario
+/**
+ * Ejecuta el evento submit del formulario
+ */
+formulario.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const datos = new FormData(formulario);
 
-    switch (opcion) {
-        case 'insertar':
-            mensajeAlerta = 'Datos guardados';
-            insertarExpedientes(datos);
-            break;
+    try {
+        if (opcion === 'insertar') {
+            await insertarExpedientes(datos);
+            mensajeAlerta = 'Expediente agregado correctamente';
+        } else {
+            await actualizarExpedientes(datos, id);
+            mensajeAlerta = 'Expediente actualizado correctamente';
+        }
 
-        case 'actualizar':
-            mensajeAlerta = 'Datos actualizados';
-            actualizarExpedientes(datos, id);
-            break;
+        formularioModal.hide();
+        expedientes = await obtenerExpedientes();
+        expedientesFiltrados = filtrarExpedientes(buscar);
+        mostrarExpedientes();
+        insertarAlerta(mensajeAlerta, 'success');
+    } catch (error) {
+        insertarAlerta('Error al procesar la operación', 'danger');
     }
-    insertarAlerta(mensajeAlerta, 'success');
-    mostrarExpedientes();
 });
 
 /**
  * Define los mensajes de alerta
- * @param mensaje el mensaje a mostrar
- * @param tipo el tipo de alerta
  */
 const insertarAlerta = (mensaje, tipo) => {
-    const envoltorio = document.createElement('div');
-    envoltorio.innerHTML = `
+    alerta.innerHTML = `
         <div class="alert alert-${tipo} alert-dismissible" role="alert">
             <div>${mensaje}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     `;
-    alerta.append(envoltorio);
-}
+};
 
 /**
- * Determina en qué elemento se realiza un evento
- * @param elemento el elemento al que se le realiza el evento
- * @param evento el evento realizado
- * @param selector el selector seleccionado
- * @param manejador el método que maneja el evento
+ * Maneja los eventos de edición y eliminación
  */
-const on = (elemento, evento, selector, manejador) => {
-    elemento.addEventListener(evento, e => { // Agregamos el método para escuchar el evento
-        if (e.target.closest(selector)) { // Si el objetivo del manejador es el selector 
-            manejador(e); // Ejecutamos el método del manejador 
+document.addEventListener('click', async (e) => {
+    if (e.target.closest('.btn-editar')) {
+        const button = e.target.closest('.btn-editar');
+        id = button.dataset.id;
+        expediente = expedientes.find(exp => exp.id == id);
+
+        if (expediente) {
+            Object.entries(expediente).forEach(([key, value]) => {
+                const input = document.querySelector(`#${key}`);
+                if (input) input.value = value || '';
+            });
+
+            opcion = 'actualizar';
+            formularioModal.show();
         }
-    });
-}
+    }
 
-/**
-* Función para el botón Editar
-*/
-on(document, 'click', '.btn-editar', e => {
-    const cardFooter = e.target.parentNode; // Guardamos el elemento padre del botón
+    if (e.target.closest('.btn-borrar')) {
+        const button = e.target.closest('.btn-borrar');
+        id = button.dataset.id;
+        expediente = expedientes.find(exp => exp.id == id);
 
-    // Guardamos los valores del card del expediente
-    id = cardFooter.querySelector('.id-expediente').value;
-    expediente = expedientes.find(item => item.id == id);
-
-    // Asignamos los valores a los input del formulario
-    inputCodigo.value = expediente.codigo;
-    inputTipoExpediente.value = expediente.tipoExpediente;
-    inputNroExpediente.value = expediente.nroExpediente;
-    inputJuzgado.value = expediente.juzgado;
-    inputCaratula.value = expediente.caratula;
-    inputFechaInicio.value = expediente.fechaInicio;
-    inputTipoJuicio.value = expediente.tipoJuicio;
-    inputAcargode.value = expediente.acargode;
-    inputFechaFin.value = expediente.fechaFin;
-    inputEstado.value = expediente.estado;
-    inputFechaBaja.value = expediente.fechaBaja;
-
-    // Mostramos el formulario
-    formularioModal.show();
-
-    opcion = 'actualizar';
-});
-
-/**
- * Función para el botón Borrar
- */
-on(document, 'click', '.btn-borrar', e => {
-    const cardFooter = e.target.parentNode;
-    id = cardFooter.querySelector('.id-expediente').value;
-
-    let aceptar = confirm(`¿Realmente desea eliminar el expediente con ID ${id}?`);
-    if (aceptar) {
-        eliminarExpedientes(id);
-        insertarAlerta(`Expediente con ID ${id} borrado`, 'danger');
-        mostrarExpedientes();
+        if (expediente && confirm(`¿Realmente desea eliminar el expediente ${expediente.nroExpediente}?`)) {
+            try {
+                await eliminarExpedientes(id);
+                expedientes = await obtenerExpedientes();
+                expedientesFiltrados = filtrarExpedientes(buscar);
+                mostrarExpedientes();
+                insertarAlerta('Expediente eliminado correctamente', 'success');
+            } catch (error) {
+                insertarAlerta('Error al eliminar el expediente', 'danger');
+            }
+        }
     }
 });

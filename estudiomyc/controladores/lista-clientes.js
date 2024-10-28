@@ -10,10 +10,10 @@ const alerta = document.querySelector("#alerta");
 // Formulario
 const formulario = document.querySelector("#formulario");
 const formularioModal = new bootstrap.Modal(document.querySelector("#formularioModal"));
-const btnNuevo = document.querySelector("#btnNuevo");
+const btnNuevoCliente = document.querySelector("[data-bs-target='#formularioModal']");
 
 // Inputs
-const inputCodigo = document.querySelector("#codigo");
+const inputId = document.querySelector("#id");
 const inputTipoPersona = document.querySelector("#tipoPersona");
 const inputTipoDni = document.querySelector("#tipoDni");
 const inputApellidoRsocial = document.querySelector("#apellidoRsocial");
@@ -28,47 +28,20 @@ const inputFalta = document.querySelector("#falta");
 const inputFbaja = document.querySelector("#fbaja");
 
 // Variables 
-let buscar = '';
 let opcion = '';
 let id;
 let mensajeAlerta;
 
 let clientes = [];
-let clientesFiltrados = [];
-let cliente = {};
-
-// Control de usuario
-let usuario = '';
-let logueado = false;
 
 /**
  * Esta función se ejecuta cuando
  * todo el contenido está cargado
  */
 document.addEventListener('DOMContentLoaded', async () => {
-    controlUsuario();
     clientes = await obtenerClientes();
-    clientesFiltrados = filtrarPorNombre('');
     mostrarClientes();
 });
-
-/**
- * Controla si el usuario está logueado
- */
-const controlUsuario = () => {
-    if (sessionStorage.getItem('usuario')) {
-        usuario = sessionStorage.getItem('usuario');
-        logueado = true;
-    } else {
-        logueado = false;
-    }
-
-    if (logueado) {
-        btnNuevo.style.display = 'inline';
-    } else {
-        btnNuevo.style.display = 'none';
-    }
-};
 
 /**
  * Obtiene los clientes
@@ -79,76 +52,37 @@ async function obtenerClientes() {
 }
 
 /**
- * Filtra los clientes por nombre 
- * @param n el nombre del cliente 
- * @return clientes filtrados 
- */
-function filtrarPorNombre(n) {
-    clientesFiltrados = clientes.filter(item => item.nombres.includes(n) || item.apellidoRsocial.includes(n));
-    return clientesFiltrados;
-}
-
-/**
- * Muestra los clientes 
+ * Muestra los clientes en formato tabla
  */
 function mostrarClientes() {
     listado.innerHTML = '';
-    clientesFiltrados.map((cliente) =>
-    (listado.innerHTML += `
-            <div class="col">
-                <div class="card" style="width: 18rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <span name="spancodigo">${cliente.codigo}</span> - <span name="spannombre">${cliente.apellidoRsocial} ${cliente.nombres}</span>
-                        </h5>
-                        <p class="card-text">
-                            <strong>Domicilio:</strong> ${cliente.domicilio}<br>
-                            <strong>Email:</strong> ${cliente.email}<br>
-                            <strong>Teléfono:</strong> ${cliente.telefono}<br>
-                        </p>
-                        <input type="hidden" class="id-cliente" value="${cliente.id}">
-                    </div>
-                    <div class="card-footer ${logueado ? 'd-flex' : 'none'};">
-                        <a class="btn-editar btn btn-primary">Editar</a>
-                        <a class="btn-borrar btn btn-danger">Borrar</a>
-                    </div>
-                </div>
-            </div>
-        `)
-    );
-}
-
-/**
- * Filtro de los clientes
- */
-const botonesFiltros = document.querySelectorAll('#filtros button');
-botonesFiltros.forEach(boton => {
-    boton.addEventListener('click', e => {
-        boton.classList.add('active');
-        boton.setAttribute('aria-current', 'page');
-
-        botonesFiltros.forEach(otroBoton => {
-            if (otroBoton !== boton) {
-                otroBoton.classList.remove('active');
-                otroBoton.removeAttribute('aria-current');
-            }
-        });
-
-        buscar = boton.innerHTML;
-        if (buscar == 'Todos') {
-            buscar = '';
-        }
-        filtrarPorNombre(buscar);
-        mostrarClientes();
+    clientes.forEach((cliente) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${cliente.id}</td>
+            <td>${cliente.tipoPersona === '1' ? 'Física' : 'Jurídica'}</td>
+            <td>${cliente.tipoDni}</td>
+            <td>${cliente.apellidoRsocial}</td>
+            <td>${cliente.nombres}</td>
+            <td>${cliente.domicilio}</td>
+            <td>${cliente.telefono}</td>
+            <td>${cliente.email}</td>
+            <td>${cliente.localidad}</td>
+            <td>${cliente.cpostal}</td>
+            <td>${cliente.fnacimiento}</td>
+            <td>${cliente.falta}</td>
+            <td>${cliente.fbaja || '-'}</td>
+        `;
+        listado.appendChild(row);
     });
-});
+}
 
 /**
  * Ejecuta el evento click del botón Nuevo
  */
-btnNuevo.addEventListener('click', () => {
+btnNuevoCliente.addEventListener('click', () => {
     // Limpiamos los inputs
-    inputCodigo.value = null;
+    inputId.value = null;
     inputTipoPersona.value = null;
     inputTipoDni.value = null;
     inputApellidoRsocial.value = null;
@@ -164,103 +98,88 @@ btnNuevo.addEventListener('click', () => {
 
     // Mostrar el formulario Modal
     formularioModal.show();
+
     opcion = 'insertar';
 });
 
 /**
+ * Limpia el formulario
+ */
+function limpiarFormulario() {
+    formulario.reset();
+}
+
+/**
  * Ejecuta el evento submit del formulario
  */
-formulario.addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevenimos la acción por defecto
-    const datos = new FormData(formulario); // Guardamos los datos del formulario
+formulario.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const datos = new FormData(formulario);
 
-    switch (opcion) {
-        case 'insertar':
-            mensajeAlerta = 'Datos guardados';
-            insertarClientes(datos);
-            break;
+    try {
+        if (opcion === 'insertar') {
+            await insertarClientes(datos);
+            mensajeAlerta = 'Cliente agregado correctamente';
+        } else {
+            await actualizarClientes(datos, id);
+            mensajeAlerta = 'Cliente actualizado correctamente';
+        }
 
-        case 'actualizar':
-            mensajeAlerta = 'Datos actualizados';
-            actualizarClientes(datos, id);
-            break;
+        formularioModal.hide();
+        clientes = await obtenerClientes();
+        mostrarClientes();
+        insertarAlerta(mensajeAlerta, 'success');
+    } catch (error) {
+        insertarAlerta('Error al procesar la operación', 'danger');
     }
-    insertarAlerta(mensajeAlerta, 'success');
-    mostrarClientes();
 });
 
 /**
  * Define los mensajes de alerta
- * @param mensaje el mensaje a mostrar
- * @param tipo el tipo de alerta
  */
 const insertarAlerta = (mensaje, tipo) => {
-    const envoltorio = document.createElement('div');
-    envoltorio.innerHTML = `
+    alerta.innerHTML = `
         <div class="alert alert-${tipo} alert-dismissible" role="alert">
             <div>${mensaje}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     `;
-    alerta.append(envoltorio);
-}
+};
 
 /**
- * Determina en qué elemento se realiza un evento
- * @param elemento el elemento al que se le realiza el evento
- * @param evento el evento realizado
- * @param selector el selector seleccionado
- * @param manejador el método que maneja el evento
+ * Maneja los eventos de edición
  */
-const on = (elemento, evento, selector, manejador) => {
-    elemento.addEventListener(evento, e => { // Agregamos el método para escuchar el evento
-        if (e.target.closest(selector)) { // Si el objetivo del manejador es el selector 
-            manejador(e); // Ejecutamos el método del manejador 
+document.addEventListener('click', async (e) => {
+    if (e.target.closest('.btn-editar')) {
+        const button = e.target.closest('.btn-editar');
+        id = button.dataset.id;
+        const cliente = clientes.find(c => c.id == id);
+
+        if (cliente) {
+            Object.entries(cliente).forEach(([key, value]) => {
+                const input = document.querySelector(`#${key}`);
+                if (input) input.value = value;
+            });
+
+            opcion = 'actualizar';
+            formularioModal.show();
         }
-    });
-}
+    }
 
-/**
- * Función para el botón Editar
- */
-on(document, 'click', '.btn-editar', e => {
-    const cardFooter = e.target.parentNode; // Guardamos el elemento padre del botón
+    if (e.target.closest('.btn-borrar')) {
+        const button = e.target.closest('.btn-borrar');
+        id = button.dataset.id;
+        const cliente = clientes.find(c => c.id == id);
 
-    // Guardamos los valores del card del cliente
-    id = cardFooter.querySelector('.id-cliente').value;
-    cliente = clientes.find(item => item.id == id);
-
-    // Asignamos los valores a los input del formulario
-    inputCodigo.value = cliente.codigo;
-    inputTipoPersona.value = cliente.tipoPersona;
-    inputTipoDni.value = cliente.tipoDni;
-    inputApellidoRsocial.value = cliente.apellidoRsocial;
-    inputNombres.value = cliente.nombres;
-    inputDomicilio.value = cliente.domicilio;
-    inputTelefono.value = cliente.telefono;
-    inputEmail.value = cliente.email;
-    inputLocalidad.value = cliente.localidad;
-    inputCpostal.value = cliente.cpostal;
-    inputFnacimiento.value = cliente.fnacimiento;
-    inputFalta.value = cliente.falta;
-    inputFbaja.value = cliente.fbaja;
-
-    // Mostramos el formulario
-    formularioModal.show();
-    opcion = 'actualizar';
-});
-
-/**
- * Función para el botón Borrar
- */
-on(document, 'click', '.btn-borrar', e => {
-    const cardFooter = e.target.parentNode;
-    id = cardFooter.querySelector('.id-cliente').value;
-
-    let aceptar = confirm(`¿Realmente desea eliminar a ${cliente.apellidoRsocial} ${cliente.nombres}?`);
-    if (aceptar) {
-        eliminarClientes(id);
-        insertarAlerta(`${cliente.apellidoRsocial} ${cliente.nombres} borrado`, 'danger');
-        mostrarClientes();
+        if (cliente && confirm(`¿Realmente desea eliminar a ${cliente.apellidoRsocial} ${cliente.nombres}?`)) {
+            try {
+                await eliminarClientes(id);
+                clientes = await obtenerClientes();
+                mostrarClientes();
+                insertarAlerta('Cliente eliminado correctamente', 'success');
+            } catch (error) {
+                insertarAlerta('Error al eliminar el cliente', 'danger');
+            }
+        }
     }
 });

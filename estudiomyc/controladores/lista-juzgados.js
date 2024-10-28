@@ -10,10 +10,10 @@ const alerta = document.querySelector("#alerta");
 // Formulario
 const formulario = document.querySelector("#formulario");
 const formularioModal = new bootstrap.Modal(document.querySelector("#formularioModal"));
-const btnNuevo = document.querySelector("#btnNuevo");
+const btnNuevoJuzgado = document.querySelector("[data-bs-target='#formularioModal']");
 
 // Inputs
-const inputCodigo = document.querySelector("#codigo");
+const inputId = document.querySelector("#id");
 const inputNroJuzgado = document.querySelector("#nroJuzgado");
 const inputNombreJuzgado = document.querySelector("#nombreJuzgado");
 const inputJuezTram = document.querySelector("#juezTram");
@@ -21,43 +21,20 @@ const inputSecretario = document.querySelector("#secretario");
 const inputTelefono = document.querySelector("#telefono");
 
 // Variables 
-let buscar = '';
 let opcion = '';
 let id;
 let mensajeAlerta;
 
 let juzgados = [];
-let juzgadosFiltrados = [];
-let juzgado = {};
 
 /**
  * Esta función se ejecuta cuando
  * todo el contenido está cargado
  */
 document.addEventListener('DOMContentLoaded', async () => {
-    controlUsuario();
     juzgados = await obtenerJuzgados();
-    juzgadosFiltrados = filtrarPorNombreJuzgado('');
     mostrarJuzgados();
 });
-
-/**
- * Controla si el usuario está logueado
- */
-const controlUsuario = () => {
-    if (sessionStorage.getItem('usuario')) {
-        usuario = sessionStorage.getItem('usuario');
-        logueado = true;
-    } else {
-        logueado = false;
-    }
-
-    if (logueado) {
-        btnNuevo.style.display = 'inline';
-    } else {
-        btnNuevo.style.display = 'none';
-    }
-};
 
 /**
  * Obtiene los juzgados
@@ -68,77 +45,41 @@ async function obtenerJuzgados() {
 }
 
 /**
- * Filtra los juzgados por nombre 
- * @param n el nombre del juzgado 
- * @return juzgados filtrados 
- */
-function filtrarPorNombreJuzgado(n) {
-    juzgadosFiltrados = juzgados.filter(item => item.nombreJuzgado.includes(n));
-    return juzgadosFiltrados;
-}
-
-/**
- * Muestra los juzgados 
+ * Muestra los juzgados en formato tabla
  */
 function mostrarJuzgados() {
     listado.innerHTML = '';
-    juzgadosFiltrados.map((juzgado) =>
-    (listado.innerHTML += `
-            <div class="col">
-                <div class="card" style="width: 18rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <span name="spancodigo">${juzgado.codigo}</span> - <span name="spannombre">${juzgado.nombreJuzgado}</span>
-                        </h5>
-                        <p class="card-text">
-                            <strong>Nro. Juzgado:</strong> <span name="spannroJuzgado">${juzgado.nroJuzgado}</span><br>
-                            <strong>Juez:</strong> <span name="spanjuez">${juzgado.juezTram}</span><br>
-                            <strong>Secretario:</strong> <span name="spansecretario">${juzgado.secretario}</span><br>
-                            <strong>Teléfono:</strong> <span name="spantelefono">${juzgado.telefono}</span><br>
-                        </p>
-                    </div>
-                    <div class ="card-footer ${logueado ? 'd-flex' : 'none'};">
-                        <a class="btn-editar btn btn-primary">Editar</a>
-                        <a class="btn-borrar btn btn-danger">Borrar</a>
-                        <input type="hidden" class="id-juzgado" value="${juzgado.id}">
-                    </div>
-                </div>
-            </div>
-        `)
-    );
+    juzgados.forEach((juzgado) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${juzgado.id}</td>
+            <td>${juzgado.codigo}</td>
+            <td>${juzgado.nroJuzgado}</td>
+            <td>${juzgado.nombreJuzgado}</td>
+            <td>${juzgado.juezTram}</td>
+            <td>${juzgado.secretario}</td>
+            <td>${juzgado.telefono}</td>
+            <td class="text-center">
+                ${logueado ? `
+                    <button class="btn btn-sm btn-primary btn-editar" data-id="${juzgado.id}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger btn-borrar" data-id="${juzgado.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                ` : ''}
+            </td>
+        `;
+        listado.appendChild(row);
+    });
 }
-
-/**
- * Filtro de los juzgados
- */
-const botonesFiltros = document.querySelectorAll('#filtros button');
-botonesFiltros.forEach(boton => {
-    boton.addEventListener('click', e => {
-        boton.classList.add('active');
-        boton.setAttribute('aria-current', 'page');
-
-        botonesFiltros.forEach(otroBoton => {
-            if (otroBoton !== boton) {
-                otroBoton.classList.remove('active');
-                otroBoton.removeAttribute('aria-current');
-            }
-        });
-
-        buscar = boton.innerHTML;
-        if (buscar === 'Todos') {
-            buscar = '';
-        }
-        filtrarPorNombreJuzgado(buscar);
-        mostrarJuzgados();
-    })
-});
 
 /**
  * Ejecuta el evento click del botón Nuevo
  */
-btnNuevo.addEventListener('click', () => {
+btnNuevoJuzgado.addEventListener('click', () => {
     // Limpiamos los inputs
-    inputCodigo.value = null;
+    inputId.value = null;
     inputNroJuzgado.value = null;
     inputNombreJuzgado.value = null;
     inputJuezTram.value = null;

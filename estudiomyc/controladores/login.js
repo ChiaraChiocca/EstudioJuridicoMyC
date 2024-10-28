@@ -35,20 +35,20 @@ const login = (datos) => {
         method: 'POST',
         body: datos
     })
-    .then(res => res.json())
-    .then(data => {
-        console.log(data);
-        if(data[0].usuario) {
-            usuario = data[0].usuario;
-            logueado = true;
-            sessionStorage.setItem('usuario', usuario);
-            verificar();
-        } else {
-            textoLogueado.innerHTML = data;
-        }
-        inputUsuario.value = '';
-        inputPassword.value = '';
-    });
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            if (data[0].usuario) {
+                usuario = data[0].usuario;
+                logueado = true;
+                sessionStorage.setItem('usuario', usuario);
+                verificar();
+            } else {
+                textoLogueado.innerHTML = data;
+            }
+            inputUsuario.value = '';
+            inputPassword.value = '';
+        });
     //window.location.reload();
 }
 
@@ -56,13 +56,13 @@ const login = (datos) => {
  * Verifica si un usuario está logueado
  */
 const verificar = () => {
-    if(sessionStorage.getItem('usuario')) {
+    if (sessionStorage.getItem('usuario')) {
         usuario = sessionStorage.getItem('usuario');
         textoLogueado.innerHTML = `Bienvenido: ${usuario}`;
         logueado = true;
     }
 
-    if(logueado) {
+    if (logueado) {
         divLogin.style.display = 'none';
         divLogout.style.display = 'inline';
     } else {
@@ -85,6 +85,6 @@ const logout = () => {
 /**
  * Ejecuta el evento click del botón logout
  */
-btnLogout.addEventListener('click', () =>{
+btnLogout.addEventListener('click', () => {
     logout();
 })
