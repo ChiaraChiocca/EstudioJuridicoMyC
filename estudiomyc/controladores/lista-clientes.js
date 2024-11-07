@@ -9,7 +9,7 @@ const alerta = document.querySelector("#alerta");
 
 // Formulario
 const formulario = document.querySelector("#formulario");
-const formularioModal = new bootstrap.Modal(document.querySelector("#formularioModal"));
+let formularioModal; // Declaramos la variable pero no la inicializamos aquí
 const btnNuevo = document.querySelector("#btnNuevo");
 
 // Inputs
@@ -40,9 +40,13 @@ let cliente = {};
  * todo el contenido está cargado
  */
 document.addEventListener('DOMContentLoaded', async () => {
+    // Inicializamos el modal después de que el DOM esté cargado
+    formularioModal = new bootstrap.Modal(document.querySelector("#formularioModal"));
     clientes = await obtenerClientes();
     mostrarClientes();
 });
+
+// El resto del código permanece igual...
 
 /**
  * Obtiene los clientes
